@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#00e676" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Iron Protocol" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='108' fill='%230a0a0f'/><rect x='80' y='180' width='40' height='152' rx='8' fill='%2300e676'/><rect x='140' y='140' width='50' height='232' rx='10' fill='%2300e676'/><rect x='210' y='230' width='92' height='52' rx='8' fill='%2300e676'/><rect x='322' y='140' width='50' height='232' rx='10' fill='%2300e676'/><rect x='392' y='180' width='40' height='152' rx='8' fill='%2300e676'/></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='108' fill='%230a0a0f'/><rect x='80' y='180' width='40' height='152' rx='8' fill='%2300e676'/><rect x='140' y='140' width='50' height='232' rx='10' fill='%2300e676'/><rect x='210' y='230' width='92' height='52' rx='8' fill='%2300e676'/><rect x='322' y='140' width='50' height='232' rx='10' fill='%2300e676'/><rect x='392' y='180' width='40' height='152' rx='8' fill='%2300e676'/></svg>" />
+  <title>Iron Protocol — Fitness Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body, #root { height: 100%; width: 100%; overflow-x: hidden; }
+    body { background: #0a0a0f; color: #e8e6e3; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    .btn { cursor: pointer; border: none; outline: none; font-family: inherit; transition: all .15s ease; -webkit-user-select: none; user-select: none; }
+    .btn:active { transform: scale(0.96); }
+    .card { background: #141419; border: 1px solid #1e1e28; border-radius: 14px; padding: 16px; margin-bottom: 12px; animation: fadeIn .3s ease; }
+    .chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    input, select { background: #1a1a24; border: 1px solid #2a2a38; color: #e8e6e3; border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 14px; outline: none; width: 100%; -webkit-appearance: none; }
+    input:focus, select:focus { border-color: #00e676; }
+    input[type="number"] { width: 80px; text-align: center; }
+    .progress-ring { transition: stroke-dashoffset .6s ease; }
+    .check-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #1a1a24; cursor: pointer; -webkit-user-select: none; user-select: none; }
+    .check-row:last-child { border-bottom: none; }
+    .check-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid #2a2a38; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s ease; }
+    .check-box.checked { background: #00e676; border-color: #00e676; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+    .modal-content { background: #141419; border: 1px solid #1e1e28; border-radius: 20px 20px 0 0; padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; animation: slideUp .25s ease; }
+    .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: #0e0e14; border-top: 1px solid #1a1a24; display: flex; z-index: 50; padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 8px)); }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; cursor: pointer; color: #555; transition: color .15s ease; font-size: 10px; font-weight: 600; letter-spacing: .5px; -webkit-user-select: none; user-select: none; }
+    .tab-item.active { color: #00e676; }
+    .stepper-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: #1e1e28; border: none; color: #e8e6e3; cursor: pointer; border-radius: 6px; }
+    .stepper-btn:active { background: #00e676; color: #000; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 4px; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef } = React;
+
+    // ─── STORAGE (localStorage for PWA) ───
+    const STORAGE_KEY = "iron-protocol-data";
+    function loadState() {
+      try { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : null; } catch { return null; }
+    }
+    function saveState(state) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { console.error("Save failed:", e); }
+    }
+
+    // ─── DEFAULT DATA ───
+    const DEFAULT_EXERCISES = [
+      // ── LEGS: Quads ──
+      { id: "e1", name: "Squat", muscle: "Legs", topWeight: 120, topReps: 2 },
+      { id: "e2", name: "Pendulum Squat", muscle: "Legs", topWeight: 65, topReps: 10 },
+      { id: "e3", name: "Leg Press", muscle: "Legs", topWeight: 330, topReps: 9 },
+      { id: "e4", name: "Leg Press (less ROM)", muscle: "Legs", topWeight: 200, topReps: 12 },
+      { id: "e5", name: "Hack Squat", muscle: "Legs", topWeight: 150, topReps: 7 },
+      { id: "e6", name: "Front Leg Extension (round plates)", muscle: "Legs", topWeight: 115, topReps: 9 },
+      { id: "e7", name: "Front Leg Extension (machine)", muscle: "Legs", topWeight: 144, topReps: 13 },
+      { id: "e8", name: "Front Leg Extension (single leg)", muscle: "Legs", topWeight: 113, topReps: 7 },
+      { id: "e9", name: "Bulgarian Split Squat", muscle: "Legs", topWeight: 28, topReps: 8 },
+      // ── LEGS: Hamstrings ──
+      { id: "e10", name: "BB RDL", muscle: "Legs", topWeight: 90, topReps: 8 },
+      { id: "e11", name: "DB RDL / Stiff Leg DL", muscle: "Legs", topWeight: 50, topReps: 15 },
+      { id: "e12", name: "BB Stiff Leg DL", muscle: "Legs", topWeight: 140, topReps: 6 },
+      { id: "e13", name: "Horizontal Leg Curl", muscle: "Legs", topWeight: 76, topReps: 7 },
+      { id: "e14", name: "Seated Leg Curl", muscle: "Legs", topWeight: 99, topReps: 9 },
+      { id: "e15", name: "Single Machine Leg Curl", muscle: "Legs", topWeight: 40, topReps: 7 },
+      // ── LEGS: Glutes ──
+      { id: "e16", name: "Glute Kickback", muscle: "Legs", topWeight: 22.5, topReps: 8 },
+      { id: "e17", name: "Glute Press (single leg)", muscle: "Legs", topWeight: 59, topReps: 12 },
+      { id: "e18", name: "Glute Drive/Bridge (machine)", muscle: "Legs", topWeight: 90, topReps: 9 },
+      { id: "e19", name: "Hip Thruster Machine", muscle: "Legs", topWeight: 144, topReps: 8 },
+      { id: "e20", name: "Smith Machine Glute Bridge", muscle: "Legs", topWeight: 210, topReps: 6 },
+      { id: "e21", name: "Squat Rack Glute Bridge", muscle: "Legs", topWeight: 160, topReps: 6 },
+      // ── LEGS: Adductors/Abductors ──
+      { id: "e22", name: "Outer Thigh Machine", muscle: "Legs", topWeight: 79, topReps: 9 },
+      { id: "e23", name: "Inner Thigh Machine", muscle: "Legs", topWeight: 59, topReps: 9 },
+      { id: "e24", name: "Standing Inner Thigh Cable Squeeze", muscle: "Legs", topWeight: 20, topReps: 8 },
+      // ── LEGS: Calves ──
+      { id: "e25", name: "Hack Squat Calf Raises", muscle: "Legs", topWeight: 10, topReps: 21 },
+      { id: "e26", name: "Smith Machine Standing Calf Raises", muscle: "Legs", topWeight: 150, topReps: 10 },
+      // ── CHEST ──
+      { id: "e27", name: "Bench Press", muscle: "Chest", topWeight: 97.5, topReps: 1 },
+      { id: "e28", name: "Incline Smith Press", muscle: "Chest", topWeight: 70, topReps: 10 },
+      { id: "e29", name: "Incline Bench", muscle: "Chest", topWeight: 80, topReps: 7 },
+      { id: "e30", name: "Decline Bench", muscle: "Chest", topWeight: 80, topReps: 6 },
+      { id: "e31", name: "DB Press", muscle: "Chest", topWeight: 44, topReps: 6 },
+      { id: "e32", name: "Incline DB Press", muscle: "Chest", topWeight: 44, topReps: 6 },
+      { id: "e33", name: "Sitting Machine Press (round plates)", muscle: "Chest", topWeight: 60, topReps: 7 },
+      { id: "e34", name: "Seated Machine Press (adjustable)", muscle: "Chest", topWeight: 106, topReps: 9 },
+      { id: "e35", name: "Sitting Down Chest Push Machine", muscle: "Chest", topWeight: 80, topReps: 8 },
+      { id: "e36", name: "Lower Pec Cable Squeeze", muscle: "Chest", topWeight: 20, topReps: 11 },
+      { id: "e37", name: "Middle Pec Cable Squeeze", muscle: "Chest", topWeight: 20, topReps: 9 },
+      { id: "e38", name: "Upper Pec Cable Squeeze", muscle: "Chest", topWeight: 10, topReps: 9 },
+      { id: "e39", name: "Pec Deck", muscle: "Chest", topWeight: 86, topReps: 6 },
+      { id: "e40", name: "Pec DB Flyes", muscle: "Chest", topWeight: 16, topReps: 9 },
+      { id: "e41", name: "Cable Crucifix Raise", muscle: "Chest", topWeight: 7.5, topReps: 8 },
+      // ── SHOULDERS ──
+      { id: "e42", name: "Shoulder Press Machine (adjustable)", muscle: "Shoulders", topWeight: 93, topReps: 7 },
+      { id: "e43", name: "Shoulder Press Machine (round plates)", muscle: "Shoulders", topWeight: 100, topReps: 6 },
+      { id: "e44", name: "Shoulder Press DB", muscle: "Shoulders", topWeight: 26, topReps: 9 },
+      { id: "e45", name: "Front Delt Raise", muscle: "Shoulders", topWeight: 10, topReps: 11 },
+      { id: "e46", name: "Side Deltoid Raise Machine", muscle: "Shoulders", topWeight: 106, topReps: 8 },
+      { id: "e47", name: "Side Delt 90° Raise", muscle: "Shoulders", topWeight: 12, topReps: 15 },
+      { id: "e48", name: "Chest Supported DB Lateral Raise", muscle: "Shoulders", topWeight: 12, topReps: 8 },
+      { id: "e49", name: "Rear Delt Machine (each side)", muscle: "Shoulders", topWeight: 55, topReps: 9 },
+      { id: "e50", name: "Rear Delt Flyes", muscle: "Shoulders", topWeight: 7, topReps: 11 },
+      // ── BACK: Vertical Pull ──
+      { id: "e51", name: "Pull Ups", muscle: "Back", topWeight: 0, topReps: 21 },
+      { id: "e52", name: "Overhead Pulldown (round plates)", muscle: "Back", topWeight: 120, topReps: 7 },
+      { id: "e53", name: "Overhead Close Grip Cable Pulldown", muscle: "Back", topWeight: 59, topReps: 7 },
+      { id: "e54", name: "Overhead Normal Grip Cable Pulldown", muscle: "Back", topWeight: 50, topReps: 10 },
+      { id: "e55", name: "Overhead Wide Grip Cable Pulldown", muscle: "Back", topWeight: 45, topReps: 7 },
+      { id: "e56", name: "Overhead Wide Neutral Grip Pulldown", muscle: "Back", topWeight: 59, topReps: 6 },
+      { id: "e57", name: "Overhead Normal Neutral Grip Pulldown", muscle: "Back", topWeight: 50, topReps: 8 },
+      { id: "e58", name: "Lat Pullovers", muscle: "Back", topWeight: 33, topReps: 6 },
+      // ── BACK: Rows ──
+      { id: "e59", name: "Bent Over BB Rows", muscle: "Back", topWeight: 100, topReps: 11 },
+      { id: "e60", name: "T-Bar Row (excl BB weight)", muscle: "Back", topWeight: 80, topReps: 9 },
+      { id: "e61", name: "T-Row Machine (wide)", muscle: "Back", topWeight: 40, topReps: 11 },
+      { id: "e62", name: "Normal Grip T-Row (machine)", muscle: "Back", topWeight: 50, topReps: 7 },
+      { id: "e63", name: "Close Grip T-Row (machine)", muscle: "Back", topWeight: 50, topReps: 9 },
+      { id: "e64", name: "Bench DB Row", muscle: "Back", topWeight: 50, topReps: 15 },
+      { id: "e65", name: "Single Arm D Handle Cable Row", muscle: "Back", topWeight: 27, topReps: 6 },
+      { id: "e66", name: "Seated Machine Row", muscle: "Back", topWeight: 54, topReps: 7 },
+      { id: "e67", name: "Neutral Grip Seated Row", muscle: "Back", topWeight: 45, topReps: 11 },
+      { id: "e68", name: "Close Grip Seated Row", muscle: "Back", topWeight: 64, topReps: 8 },
+      { id: "e69", name: "Bent Over Dual DB Row", muscle: "Back", topWeight: 50, topReps: 9 },
+      { id: "e70", name: "Standing Upper Cable Row", muscle: "Back", topWeight: 40, topReps: 9 },
+      { id: "e71", name: "Standing Middle Cable Row", muscle: "Back", topWeight: 50, topReps: 12 },
+      { id: "e72", name: "Elevated Row (max elevation)", muscle: "Back", topWeight: 0, topReps: 10 },
+      // ── BACK: Lower Back ──
+      { id: "e73", name: "Loaded Hyper Extensions (lower back)", muscle: "Back", topWeight: 112.5, topReps: 11 },
+      { id: "e74", name: "Low Back Extension Machine", muscle: "Back", topWeight: 99, topReps: 11 },
+      { id: "e75", name: "Loaded Hyper Extensions (glutes)", muscle: "Back", topWeight: 82.5, topReps: 11 },
+      { id: "e76", name: "Lower Back Support Machine", muscle: "Back", topWeight: 59, topReps: 8 },
+      // ── TRAPS ──
+      { id: "e77", name: "Trapezius BB Raise", muscle: "Shoulders", topWeight: 48, topReps: 10 },
+      { id: "e78", name: "Trapezius DB Shrugs", muscle: "Shoulders", topWeight: 50, topReps: 25 },
+      { id: "e79", name: "Trap Machine Plate Raise", muscle: "Shoulders", topWeight: 55, topReps: 17 },
+      // ── BICEPS ──
+      { id: "e80", name: "Underarm Preacher Curl", muscle: "Arms", topWeight: 30, topReps: 5 },
+      { id: "e81", name: "Single Arm Preacher Curl Machine", muscle: "Arms", topWeight: 7.5, topReps: 8 },
+      { id: "e82", name: "Single Arm Bench Preacher Curl", muscle: "Arms", topWeight: 14, topReps: 7 },
+      { id: "e83", name: "Single Arm DB Curl", muscle: "Arms", topWeight: 20, topReps: 5 },
+      { id: "e84", name: "Hammer Single Arm DB Curl", muscle: "Arms", topWeight: 24, topReps: 6 },
+      { id: "e85", name: "Incline DB Curl", muscle: "Arms", topWeight: 12, topReps: 9 },
+      { id: "e86", name: "Underarm Bicep Curl", muscle: "Arms", topWeight: 35, topReps: 6 },
+      { id: "e87", name: "Underarm Wide BB Bicep Curl", muscle: "Arms", topWeight: 25, topReps: 9 },
+      { id: "e88", name: "Overarm BB Bicep Curl", muscle: "Arms", topWeight: 20, topReps: 8 },
+      { id: "e89", name: "Overarm Bicep Curl", muscle: "Arms", topWeight: 23, topReps: 8 },
+      { id: "e90", name: "Lying Forward Neutral Grip Bench DB Curl", muscle: "Arms", topWeight: 14, topReps: 9 },
+      { id: "e91", name: "Single Bicep Side Cable Curl", muscle: "Arms", topWeight: 13, topReps: 7 },
+      { id: "e92", name: "Lying Forward Bench Neutral DB Curl", muscle: "Arms", topWeight: 16, topReps: 10 },
+      // ── TRICEPS ──
+      { id: "e93", name: "Tricep Extension Machine", muscle: "Arms", topWeight: 144, topReps: 10 },
+      { id: "e94", name: "Tricep Hammer Cable Pushdown", muscle: "Arms", topWeight: 25, topReps: 8 },
+      { id: "e95", name: "Tricep Overarm Cable Pushdown", muscle: "Arms", topWeight: 52.5, topReps: 2 },
+      { id: "e96", name: "Tricep Underarm W Bar Pushdown", muscle: "Arms", topWeight: 32.5, topReps: 7 },
+      { id: "e97", name: "Single Tricep Side Cable Extension", muscle: "Arms", topWeight: 16, topReps: 4 },
+      { id: "e98", name: "Cross Body Tricep Extension", muscle: "Arms", topWeight: 16, topReps: 6 },
+      // ── FOREARMS ──
+      { id: "e99", name: "Bench Overarm Forearm BB/DB Raises", muscle: "Arms", topWeight: 20, topReps: 7 },
+      { id: "e100", name: "Bench Underarm Forearm BB/DB Raises", muscle: "Arms", topWeight: 25, topReps: 17 },
+      { id: "e101", name: "Standing Neutral Forearm Alt DB", muscle: "Arms", topWeight: 12, topReps: 15 },
+      // ── CORE ──
+      { id: "e102", name: "Side Plank", muscle: "Core", topWeight: 0, topReps: 2 },
+      { id: "e103", name: "Kneeling Cable Crunches", muscle: "Core", topWeight: 55, topReps: 8 },
+      { id: "e104", name: "Standing Cable Crunches", muscle: "Core", topWeight: 52.5, topReps: 8 },
+      { id: "e105", name: "Crunch Machine", muscle: "Core", topWeight: 144, topReps: 11 },
+      { id: "e106", name: "Weighted Hanging Leg Raise", muscle: "Core", topWeight: 3, topReps: 10 },
+      // ── CARDIO ──
+      { id: "e107", name: "Max Incline Run (15 incline)", muscle: "Cardio", topWeight: 0, topReps: 10 },
+      { id: "e108", name: "Rowing 500m", muscle: "Cardio", topWeight: 0, topReps: 1 },
+      { id: "e109", name: "Lean Back Cycle Machine", muscle: "Cardio", topWeight: 0, topReps: 9 },
+      { id: "e110", name: "Stairmaster", muscle: "Cardio", topWeight: 0, topReps: 10 },
+      { id: "e111", name: "Swimming 50m", muscle: "Cardio", topWeight: 0, topReps: 1 },
+      { id: "e112", name: "Incline Farmers Walk", muscle: "Full Body", topWeight: 25, topReps: 5 },
+      { id: "e113", name: "JM Press", muscle: "Arms", topWeight: 0, topReps: 8 },
+      { id: "e114", name: "Hanging Leg/Knee Raises", muscle: "Core", topWeight: 0, topReps: 10 },
+      { id: "e115", name: "45° Leg Press", muscle: "Legs", topWeight: 0, topReps: 10 },
+    ];
+    const DEFAULT_FOODS = [
+      { id: "f1", name: "3 Rice Cakes", calories: 105, protein: 2, carbs: 21, fat: 1 },
+      { id: "f2", name: "5 Eggs", calories: 350, protein: 30, carbs: 2, fat: 25 },
+      { id: "f3", name: "2 Mozzarellas", calories: 584, protein: 46, carbs: 2, fat: 45 },
+      { id: "f4", name: "Carrot Juice (~100ml)", calories: 40, protein: 0, carbs: 9, fat: 0 },
+      { id: "f5", name: "4 Scoops Porridge", calories: 620, protein: 20, carbs: 108, fat: 10 },
+      { id: "f6", name: "1 Banana", calories: 105, protein: 1, carbs: 27, fat: 0 },
+      { id: "f7", name: "Blueberries (handful)", calories: 30, protein: 1, carbs: 7, fat: 0 },
+      { id: "f8", name: "Cocoa Powder (1 tbsp)", calories: 20, protein: 1, carbs: 3, fat: 1 },
+      { id: "f9", name: "Peanut Butter (1 tbsp)", calories: 95, protein: 4, carbs: 3, fat: 8 },
+      { id: "f10", name: "Soy Milk (~250ml)", calories: 80, protein: 7, carbs: 4, fat: 4 },
+      { id: "f11", name: "Whey (40g)", calories: 160, protein: 32, carbs: 3, fat: 1 },
+      { id: "f12", name: "Greek Yoghurt (~143g)", calories: 80, protein: 15, carbs: 6, fat: 0 },
+    ];
+    const DEFAULT_WORKOUTS = [
+      { id: "w1", name: "MON — Lower 2", exercises: ["e26", "e114", "e14", "e7", "e5", "e115", "e18", "e23"] },
+      { id: "w2", name: "TUE — Active Recovery", exercises: ["e26", "e114", "e14", "e7", "e23"] },
+      { id: "w3", name: "WED — Posterior", exercises: ["e13", "e103", "e12", "e65", "e66", "e58", "e81", "e83"] },
+      { id: "w4", name: "THU — Lower 1", exercises: ["e26", "e23", "e103", "e7", "e20", "e9", "e14"] },
+      { id: "w5", name: "FRI — Push", exercises: ["e41", "e35", "e39", "e28", "e98", "e113", "e48"] },
+      { id: "w6", name: "SAT — Active Recovery", exercises: ["e26", "e114", "e14", "e7", "e23"] },
+      { id: "w7", name: "SUN — Upper", exercises: ["e48", "e32", "e68", "e69", "e58", "e81", "e80", "e85", "e98"] },
+    ];
+    const DEFAULT_MEALS = [
+      { id: "m1", name: "Breakfast", foods: ["f1"] },
+      { id: "m2", name: "Lunch 1", foods: ["f2", "f3", "f4"] },
+      { id: "m3", name: "Lunch 2", foods: ["f5", "f6", "f7", "f8", "f9", "f10"] },
+      { id: "m4", name: "Dinner", foods: ["f2", "f11", "f12"] },
+    ];
+
+    function getToday() { return new Date().toISOString().split("T")[0]; }
+    function genId() { return Math.random().toString(36).substr(2, 9); }
+
+    const INITIAL_STATE = {
+      exercises: DEFAULT_EXERCISES, foods: DEFAULT_FOODS,
+      workouts: DEFAULT_WORKOUTS, meals: DEFAULT_MEALS,
+      dailyLog: {}, calorieTarget: 2800, proteinTarget: 220,
+      bodyweight: [],
+      deloadWeek: false,
+      deloadHistory: [],
+    };
+
+    // ─── SVG ICONS ───
+    const I = {
+      dumbbell: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3.5 11h1v2h-1z"/><path d="M19.5 11h1v2h-1z"/><path d="M5.5 8h1v8h-1z"/><path d="M17.5 8h1v8h-1z"/><path d="M8.5 6h1v12h-1z"/><path d="M14.5 6h1v12h-1z"/><line x1="12" y1="6" x2="12" y2="18"/></svg>,
+      food: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+      check: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+      plus: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+      trash: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+      edit: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+      chart: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+      calendar: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+      chevDown: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+      chevUp: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>,
+      fire: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1012 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg>,
+      arrowUp: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>,
+      arrowDown: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>,
+      x: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+      target: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+      reset: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>,
+    };
+
+    // ─── RING ───
+    function Ring({ value, max, size=80, stroke=6, color="#00e676", label, sublabel }) {
+      const r = (size - stroke) / 2, c = 2 * Math.PI * r, pct = Math.min(value / (max || 1), 1);
+      return (
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+          <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+            <circle cx={size/2} cy={size/2} r={r} stroke="#1e1e28" strokeWidth={stroke} fill="none"/>
+            <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeDasharray={c} strokeDashoffset={c*(1-pct)} strokeLinecap="round" className="progress-ring"/>
+          </svg>
+          <div style={{ textAlign:"center", marginTop:-size-4, height:size, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:16, color }}>{value}</div>
+          </div>
+          {label && <div style={{ fontSize:11, fontWeight:700, color:"#888", marginTop:4, letterSpacing:.5 }}>{label}</div>}
+          {sublabel && <div style={{ fontSize:10, color:"#555" }}>{sublabel}</div>}
+        </div>
+      );
+    }
+
+    // ─── WORKOUT CHECKLIST ───
+    function WorkoutCheck({ workout, state, dayLog, toggleWorkout, toggleSet }) {
+      const [open, setOpen] = useState(false);
+      const done = dayLog.checkedWorkouts?.[workout.id];
+      const keys = workout.exercises.flatMap((eid,ei) => [0,1,2].map(si => `${workout.id}-${eid}-${si}`));
+      const completed = keys.filter(k => dayLog.checkedSets?.[k]).length;
+      return (
+        <div className="card" style={{ borderLeft: done ? "3px solid #00e676" : "3px solid #2a2a38" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }} onClick={() => setOpen(!open)}>
+            <div className={`check-box ${done?"checked":""}`} onClick={e => { e.stopPropagation(); toggleWorkout(workout.id); }}>
+              {done && <span style={{ color:"#000" }}>{I.check}</span>}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:700, fontSize:14, textDecoration:done?"line-through":"none", opacity:done?.5:1 }}>{workout.name}</div>
+              <div style={{ fontSize:11, color:"#666" }}>{workout.exercises.length} exercises · {completed}/{keys.length} sets</div>
+            </div>
+            <div style={{ color:"#555" }}>{open ? I.chevUp : I.chevDown}</div>
+          </div>
+          {open && (
+            <div style={{ marginTop:12, paddingLeft:32 }}>
+              {workout.exercises.map((eid, ei) => {
+                const ex = state.exercises.find(e => e.id === eid);
+                if (!ex) return null;
+                return (
+                  <div key={eid+ei} style={{ marginBottom:10 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:"#aaa", marginBottom:4 }}>{ex.name} <span style={{ color:"#555", fontWeight:400 }}>— {ex.topWeight}kg × {ex.topReps}</span></div>
+                    {[0,1,2].map(si => {
+                      const k = `${workout.id}-${eid}-${si}`;
+                      const ch = dayLog.checkedSets?.[k];
+                      return (
+                        <div key={si} className="check-row" onClick={() => toggleSet(k)} style={{ paddingLeft:8 }}>
+                          <div className={`check-box ${ch?"checked":""}`} style={{ width:18, height:18, borderRadius:4 }}>
+                            {ch && <span style={{ color:"#000", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}
+                          </div>
+                          <div style={{ fontSize:12, color:ch?"#555":"#aaa", textDecoration:ch?"line-through":"none" }}>Set {si+1}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ─── MEAL CHECKLIST ───
+    function MealCheck({ meal, state, dayLog, toggleMeal, toggleFood }) {
+      const [open, setOpen] = useState(false);
+      const done = dayLog.checkedMeals?.[meal.id];
+      const cal = meal.foods.reduce((s,fid) => { const f = state.foods.find(x => x.id===fid); return s+(f?f.calories:0); }, 0);
+      return (
+        <div className="card" style={{ borderLeft: done ? "3px solid #448aff" : "3px solid #2a2a38" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }} onClick={() => setOpen(!open)}>
+            <div className={`check-box ${done?"checked":""}`} style={{ background:done?"#448aff":"transparent", borderColor:done?"#448aff":"#2a2a38" }} onClick={e => { e.stopPropagation(); toggleMeal(meal.id); }}>
+              {done && <span style={{ color:"#fff" }}>{I.check}</span>}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:700, fontSize:14, textDecoration:done?"line-through":"none", opacity:done?.5:1 }}>{meal.name}</div>
+              <div style={{ fontSize:11, color:"#666" }}>{meal.foods.length} items · {cal} kcal</div>
+            </div>
+            <div style={{ color:"#555" }}>{open ? I.chevUp : I.chevDown}</div>
+          </div>
+          {open && (
+            <div style={{ marginTop:10, paddingLeft:32 }}>
+              {meal.foods.map((fid,fi) => {
+                const food = state.foods.find(f => f.id===fid);
+                if (!food) return null;
+                const fk = `${meal.id}-${fid}-${fi}`;
+                const ch = dayLog.checkedFoods?.[fk];
+                return (
+                  <div key={fk} className="check-row" onClick={() => toggleFood(fk)}>
+                    <div className={`check-box ${ch?"checked":""}`} style={{ width:18, height:18, borderRadius:4, background:ch?"#448aff":"transparent", borderColor:ch?"#448aff":"#2a2a38" }}>
+                      {ch && <span style={{ color:"#fff", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, color:ch?"#555":"#ccc", textDecoration:ch?"line-through":"none" }}>{food.name}</div>
+                      <div style={{ fontSize:10, color:"#555" }}>{food.calories} kcal · P:{food.protein}g · C:{food.carbs}g · F:{food.fat}g</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ─── MODAL HELPERS ───
+    function MH({ title, close }) {
+      return (
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+          <div style={{ fontSize:16, fontWeight:700 }}>{title}</div>
+          <button className="btn" onClick={close} style={{ background:"#1e1e28", color:"#888", borderRadius:8, padding:6, display:"flex" }}>{I.x}</button>
+        </div>
+      );
+    }
+    function MB({ label, onClick, color="#00e676", textColor="#000" }) {
+      return <button className="btn" onClick={onClick} style={{ background:color, color:textColor, borderRadius:10, padding:"12px 20px", fontSize:14, fontWeight:700, width:"100%", marginTop:12 }}>{label}</button>;
+    }
+
+    // ─── EXERCISE MODALS ───
+    function AddExModal({ update, close }) {
+      const [n,sN]=useState(""), [m,sM]=useState("Chest"), [w,sW]=useState(0), [r,sR]=useState(8);
+      return (<><MH title="Add Exercise" close={close}/>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <input placeholder="Exercise name" value={n} onChange={e=>sN(e.target.value)} autoFocus/>
+          <select value={m} onChange={e=>sM(e.target.value)}>{["Chest","Back","Legs","Shoulders","Arms","Core","Full Body","Cardio"].map(x=><option key={x}>{x}</option>)}</select>
+          <div style={{ display:"flex", gap:10 }}><div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666" }}>Weight (kg)</label><input type="number" value={w} onChange={e=>sW(Number(e.target.value))}/></div><div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666" }}>Top Reps</label><input type="number" value={r} onChange={e=>sR(Number(e.target.value))}/></div></div>
+        </div>
+        <MB label="Add Exercise" onClick={()=>{ if(!n.trim()) return; update(s=>({...s, exercises:[...s.exercises,{id:genId(),name:n.trim(),muscle:m,topWeight:w,topReps:r}]})); close(); }}/>
+      </>);
+    }
+    function EditExModal({ update, exercise: ex, close }) {
+      const [n,sN]=useState(ex.name), [m,sM]=useState(ex.muscle), [w,sW]=useState(ex.topWeight), [r,sR]=useState(ex.topReps);
+      return (<><MH title="Edit Exercise" close={close}/>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <input value={n} onChange={e=>sN(e.target.value)}/>
+          <select value={m} onChange={e=>sM(e.target.value)}>{["Chest","Back","Legs","Shoulders","Arms","Core","Full Body","Cardio"].map(x=><option key={x}>{x}</option>)}</select>
+          <div style={{ display:"flex", gap:10 }}><div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666" }}>Weight (kg)</label><input type="number" value={w} onChange={e=>sW(Number(e.target.value))}/></div><div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666" }}>Top Reps</label><input type="number" value={r} onChange={e=>sR(Number(e.target.value))}/></div></div>
+        </div>
+        <MB label="Save Changes" onClick={()=>{ update(s=>({...s, exercises:s.exercises.map(e=>e.id===ex.id?{...e,name:n.trim()||e.name,muscle:m,topWeight:w,topReps:r}:e)})); close(); }}/>
+      </>);
+    }
+
+    // ─── FOOD MODALS ───
+    function AddFoodModal({ update, close }) {
+      const [n,sN]=useState(""), [cal,sCal]=useState(0), [p,sP]=useState(0), [c,sC]=useState(0), [f,sF]=useState(0);
+      return (<><MH title="Add Food" close={close}/>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <input placeholder="Food name" value={n} onChange={e=>sN(e.target.value)} autoFocus/>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+            <div><label style={{ fontSize:11, color:"#666" }}>Calories</label><input type="number" value={cal} onChange={e=>sCal(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Protein (g)</label><input type="number" value={p} onChange={e=>sP(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Carbs (g)</label><input type="number" value={c} onChange={e=>sC(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Fat (g)</label><input type="number" value={f} onChange={e=>sF(Number(e.target.value))}/></div>
+          </div>
+        </div>
+        <MB label="Add Food" color="#448aff" textColor="#fff" onClick={()=>{ if(!n.trim()) return; update(s=>({...s, foods:[...s.foods,{id:genId(),name:n.trim(),calories:cal,protein:p,carbs:c,fat:f}]})); close(); }}/>
+      </>);
+    }
+    function EditFoodModal({ update, food, close }) {
+      const [n,sN]=useState(food.name), [cal,sCal]=useState(food.calories), [p,sP]=useState(food.protein), [c,sC]=useState(food.carbs), [f,sF]=useState(food.fat);
+      return (<><MH title="Edit Food" close={close}/>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <input value={n} onChange={e=>sN(e.target.value)}/>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+            <div><label style={{ fontSize:11, color:"#666" }}>Calories</label><input type="number" value={cal} onChange={e=>sCal(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Protein (g)</label><input type="number" value={p} onChange={e=>sP(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Carbs (g)</label><input type="number" value={c} onChange={e=>sC(Number(e.target.value))}/></div>
+            <div><label style={{ fontSize:11, color:"#666" }}>Fat (g)</label><input type="number" value={f} onChange={e=>sF(Number(e.target.value))}/></div>
+          </div>
+        </div>
+        <MB label="Save Changes" color="#448aff" textColor="#fff" onClick={()=>{ update(s=>({...s, foods:s.foods.map(x=>x.id===food.id?{...x,name:n.trim()||x.name,calories:cal,protein:p,carbs:c,fat:f}:x)})); close(); }}/>
+      </>);
+    }
+
+    // ─── WORKOUT/MEAL TEMPLATE MODALS ───
+    function AddWModal({ state, update, close }) {
+      const [n,sN]=useState(""), [sel,setSel]=useState([]);
+      const tog = id => setSel(s => s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+      return (<><MH title="Add Workout" close={close}/>
+        <input placeholder="Workout name" value={n} onChange={e=>sN(e.target.value)} autoFocus style={{ marginBottom:12 }}/>
+        <div style={{ fontSize:12, color:"#666", marginBottom:8 }}>Select exercises:</div>
+        <div style={{ maxHeight:300, overflowY:"auto" }}>
+          {state.exercises.map(ex => (
+            <div key={ex.id} className="check-row" onClick={()=>tog(ex.id)}>
+              <div className={`check-box ${sel.includes(ex.id)?"checked":""}`} style={{ width:20, height:20 }}>{sel.includes(ex.id)&&<span style={{ color:"#000", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}</div>
+              <div style={{ fontSize:13 }}>{ex.name} <span style={{ color:"#555", fontSize:11 }}>({ex.muscle})</span></div>
+            </div>
+          ))}
+        </div>
+        <MB label={`Add Workout (${sel.length})`} onClick={()=>{ if(!n.trim()||!sel.length) return; update(s=>({...s, workouts:[...s.workouts,{id:genId(),name:n.trim(),exercises:sel}]})); close(); }}/>
+      </>);
+    }
+    function EditWModal({ state, update, workout, close }) {
+      const [n,sN]=useState(workout.name), [sel,setSel]=useState([...workout.exercises]);
+      const tog = id => setSel(s => s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+      return (<><MH title="Edit Workout" close={close}/>
+        <input value={n} onChange={e=>sN(e.target.value)} style={{ marginBottom:12 }}/>
+        <div style={{ fontSize:12, color:"#666", marginBottom:8 }}>Select exercises:</div>
+        <div style={{ maxHeight:300, overflowY:"auto" }}>
+          {state.exercises.map(ex => (
+            <div key={ex.id} className="check-row" onClick={()=>tog(ex.id)}>
+              <div className={`check-box ${sel.includes(ex.id)?"checked":""}`} style={{ width:20, height:20 }}>{sel.includes(ex.id)&&<span style={{ color:"#000", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}</div>
+              <div style={{ fontSize:13 }}>{ex.name} <span style={{ color:"#555", fontSize:11 }}>({ex.muscle})</span></div>
+            </div>
+          ))}
+        </div>
+        <MB label="Save Changes" onClick={()=>{ update(s=>({...s, workouts:s.workouts.map(w=>w.id===workout.id?{...w,name:n.trim()||w.name,exercises:sel}:w)})); close(); }}/>
+      </>);
+    }
+    function AddMModal({ state, update, close }) {
+      const [n,sN]=useState(""), [sel,setSel]=useState([]);
+      const tog = id => setSel(s => s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+      return (<><MH title="Add Meal" close={close}/>
+        <input placeholder="Meal name" value={n} onChange={e=>sN(e.target.value)} autoFocus style={{ marginBottom:12 }}/>
+        <div style={{ fontSize:12, color:"#666", marginBottom:8 }}>Select foods:</div>
+        <div style={{ maxHeight:300, overflowY:"auto" }}>
+          {state.foods.map(f => (
+            <div key={f.id} className="check-row" onClick={()=>tog(f.id)}>
+              <div className={`check-box ${sel.includes(f.id)?"checked":""}`} style={{ width:20, height:20, background:sel.includes(f.id)?"#448aff":"transparent", borderColor:sel.includes(f.id)?"#448aff":"#2a2a38" }}>{sel.includes(f.id)&&<span style={{ color:"#fff", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}</div>
+              <div style={{ flex:1, fontSize:13 }}>{f.name}</div>
+              <div style={{ fontSize:11, color:"#555" }}>{f.calories} kcal</div>
+            </div>
+          ))}
+        </div>
+        <MB label={`Add Meal (${sel.length})`} color="#448aff" textColor="#fff" onClick={()=>{ if(!n.trim()||!sel.length) return; update(s=>({...s, meals:[...s.meals,{id:genId(),name:n.trim(),foods:sel}]})); close(); }}/>
+      </>);
+    }
+    function EditMModal({ state, update, meal, close }) {
+      const [n,sN]=useState(meal.name), [sel,setSel]=useState([...meal.foods]);
+      const tog = id => setSel(s => s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+      return (<><MH title="Edit Meal" close={close}/>
+        <input value={n} onChange={e=>sN(e.target.value)} style={{ marginBottom:12 }}/>
+        <div style={{ fontSize:12, color:"#666", marginBottom:8 }}>Select foods:</div>
+        <div style={{ maxHeight:300, overflowY:"auto" }}>
+          {state.foods.map(f => (
+            <div key={f.id} className="check-row" onClick={()=>tog(f.id)}>
+              <div className={`check-box ${sel.includes(f.id)?"checked":""}`} style={{ width:20, height:20, background:sel.includes(f.id)?"#448aff":"transparent", borderColor:sel.includes(f.id)?"#448aff":"#2a2a38" }}>{sel.includes(f.id)&&<span style={{ color:"#fff", transform:"scale(.8)", display:"flex" }}>{I.check}</span>}</div>
+              <div style={{ flex:1, fontSize:13 }}>{f.name}</div>
+              <div style={{ fontSize:11, color:"#555" }}>{f.calories} kcal</div>
+            </div>
+          ))}
+        </div>
+        <MB label="Save Changes" color="#448aff" textColor="#fff" onClick={()=>{ update(s=>({...s, meals:s.meals.map(m=>m.id===meal.id?{...m,name:n.trim()||m.name,foods:sel}:m)})); close(); }}/>
+      </>);
+    }
+
+    // ─── PR CATEGORY (collapsible muscle group) ───
+    function PRCategory({ muscle, exercises, color }) {
+      const [open, setOpen] = useState(false);
+      const topExercise = exercises.reduce((best, ex) => ex.topWeight > (best?.topWeight || 0) ? ex : best, exercises[0]);
+      const muscleIcons = { "Legs": "🦵", "Chest": "💪", "Back": "🔙", "Shoulders": "🏋️", "Arms": "💪", "Core": "🎯", "Cardio": "❤️", "Full Body": "⚡" };
+      return (
+        <div className="card" style={{ borderLeft: `3px solid ${color}`, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(!open)}>
+            <div style={{ fontSize: 20 }}>{muscleIcons[muscle] || "🏋️"}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color }}>{muscle}</div>
+              <div style={{ fontSize: 11, color: "#666" }}>{exercises.length} exercises · Top: {topExercise.name}</div>
+            </div>
+            <div style={{ textAlign: "right", marginRight: 6 }}>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: 14, color }}>{topExercise.topWeight}kg</div>
+              <div style={{ fontSize: 10, color: "#555" }}>× {topExercise.topReps}</div>
+            </div>
+            <div style={{ color: "#555" }}>{open ? I.chevUp : I.chevDown}</div>
+          </div>
+          {open && (
+            <div style={{ marginTop: 12, borderTop: "1px solid #1e1e28", paddingTop: 8 }}>
+              {exercises.sort((a, b) => b.topWeight - a.topWeight).map((ex, i) => (
+                <div key={ex.id} style={{ display: "flex", alignItems: "center", padding: "7px 0", borderBottom: i < exercises.length - 1 ? "1px solid #1a1a24" : "none", gap: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: i === 0 ? color : "transparent", border: i === 0 ? "none" : "1px solid #2a2a38", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: i === 0 ? "#000" : "#555", fontFamily: "'Space Mono',monospace", flexShrink: 0 }}>
+                    {i === 0 ? "👑" : i + 1}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: i === 0 ? color : "#ccc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ex.name}</div>
+                  </div>
+                  <div style={{ fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: 13, color: i === 0 ? color : "#888", whiteSpace: "nowrap" }}>{ex.topWeight}kg × {ex.topReps}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ─── MAIN APP ───
+    function App() {
+      const [state, setState] = useState(() => loadState() || INITIAL_STATE);
+      const [tab, setTab] = useState("today");
+      const [modal, setModal] = useState(null);
+      const [selectedDate, setSelectedDate] = useState(getToday());
+
+      const update = useCallback(fn => {
+        setState(prev => { const next = fn(prev); saveState(next); return next; });
+      }, []);
+
+      const getDayLog = useCallback(date => {
+        return state.dailyLog[date||selectedDate] || { checkedWorkouts:{}, checkedSets:{}, checkedMeals:{}, checkedFoods:{} };
+      }, [state, selectedDate]);
+
+      const updateDayLog = useCallback((date, patch) => {
+        update(s => ({ ...s, dailyLog: { ...s.dailyLog, [date]: { ...getDayLog(date), ...patch } } }));
+      }, [update, getDayLog]);
+
+      const dayLog = getDayLog(selectedDate);
+
+      const todayCalories = state.meals.reduce((sum, meal) => {
+        if (!dayLog.checkedMeals?.[meal.id]) return sum;
+        return sum + meal.foods.reduce((fs, fid) => { const f = state.foods.find(x => x.id===fid); return fs + (f?f.calories:0); }, 0);
+      }, 0);
+      const todayProtein = state.meals.reduce((sum, meal) => {
+        if (!dayLog.checkedMeals?.[meal.id]) return sum;
+        return sum + meal.foods.reduce((fs, fid) => { const f = state.foods.find(x => x.id===fid); return fs + (f?f.protein:0); }, 0);
+      }, 0);
+      const totalSets = state.workouts.reduce((s, w) => s + w.exercises.length * 3, 0);
+      const checkedSets = Object.values(dayLog.checkedSets || {}).filter(Boolean).length;
+
+      let streak = 0;
+      const d = new Date(selectedDate);
+      for (let i = 0; i < 365; i++) {
+        const ds = new Date(d); ds.setDate(ds.getDate() - i);
+        const key = ds.toISOString().split("T")[0];
+        const log = state.dailyLog[key];
+        if (log && (Object.values(log.checkedWorkouts||{}).some(Boolean) || Object.values(log.checkedMeals||{}).some(Boolean))) streak++;
+        else if (i > 0) break;
+      }
+
+      const toggleWorkout = wid => updateDayLog(selectedDate, { checkedWorkouts: { ...dayLog.checkedWorkouts, [wid]: !dayLog.checkedWorkouts?.[wid] } });
+      const toggleSet = key => updateDayLog(selectedDate, { checkedSets: { ...dayLog.checkedSets, [key]: !dayLog.checkedSets?.[key] } });
+      const toggleMeal = mid => updateDayLog(selectedDate, { checkedMeals: { ...dayLog.checkedMeals, [mid]: !dayLog.checkedMeals?.[mid] } });
+      const toggleFood = key => updateDayLog(selectedDate, { checkedFoods: { ...dayLog.checkedFoods, [key]: !dayLog.checkedFoods?.[key] } });
+
+      const workoutsDone = Object.values(dayLog.checkedWorkouts||{}).filter(Boolean).length;
+      const mealsDone = Object.values(dayLog.checkedMeals||{}).filter(Boolean).length;
+
+      const tabs = [
+        { key:"today", label:"Today", icon:I.calendar },
+        { key:"workouts", label:"Workouts", icon:I.dumbbell },
+        { key:"meals", label:"Meals", icon:I.food },
+        { key:"progress", label:"Progress", icon:I.chart },
+      ];
+
+      // ─── PROGRESS DATA ───
+      const dates = Object.keys(state.dailyLog).sort().slice(-14);
+      const calHistory = dates.map(d => {
+        const log = state.dailyLog[d];
+        return {
+          date: d,
+          calories: state.meals.reduce((sum, meal) => {
+            if (!log?.checkedMeals?.[meal.id]) return sum;
+            return sum + meal.foods.reduce((fs, fid) => { const f = state.foods.find(x=>x.id===fid); return fs+(f?f.calories:0); }, 0);
+          }, 0),
+          sets: Object.values(log?.checkedSets||{}).filter(Boolean).length,
+        };
+      });
+
+      return (
+        <div style={{ minHeight:"100vh", background:"#0a0a0f", color:"#e8e6e3", fontFamily:"'DM Sans',sans-serif", maxWidth:520, margin:"0 auto", position:"relative", paddingBottom:80 }}>
+
+          {/* HEADER */}
+          <div style={{ padding:"20px 20px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, letterSpacing:2, color:"#00e676", textTransform:"uppercase", fontFamily:"'Space Mono',monospace" }}>Iron Protocol</div>
+              <div style={{ fontSize:22, fontWeight:700, marginTop:2 }}>Fitness Tracker</div>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              {streak > 0 && <div className="chip" style={{ background:"rgba(255,152,0,.15)", color:"#ff9800" }}>{I.fire} {streak}d streak</div>}
+              <button className="btn" onClick={()=>{ if(confirm("Reset all data?")) update(()=>INITIAL_STATE); }} style={{ background:"#1a1a24", color:"#666", borderRadius:8, padding:"6px 8px", display:"flex" }} title="Reset">{I.reset}</button>
+            </div>
+          </div>
+
+          {/* DATE */}
+          <div style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:8 }}>
+            <input type="date" value={selectedDate} onChange={e=>setSelectedDate(e.target.value)} style={{ background:"#1a1a24", border:"1px solid #2a2a38", color:"#e8e6e3", borderRadius:8, padding:"6px 10px", fontFamily:"'Space Mono',monospace", fontSize:13, flex:1 }}/>
+            {selectedDate !== getToday() && <button className="btn" onClick={()=>setSelectedDate(getToday())} style={{ background:"#00e676", color:"#000", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700 }}>Today</button>}
+          </div>
+
+          {/* DELOAD TOGGLE */}
+          <div style={{ padding:"0 20px 8px" }}>
+            <div onClick={()=>{
+              const newVal = !state.deloadWeek;
+              update(s => ({
+                ...s,
+                deloadWeek: newVal,
+                deloadHistory: newVal
+                  ? [...s.deloadHistory, { start: getToday(), end: null }]
+                  : s.deloadHistory.map((d, i) => i === s.deloadHistory.length - 1 ? { ...d, end: getToday() } : d)
+              }));
+            }} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:10, cursor:"pointer", background: state.deloadWeek ? "rgba(255,152,0,.12)" : "#141419", border: state.deloadWeek ? "1px solid rgba(255,152,0,.4)" : "1px solid #1e1e28", transition:"all .2s ease" }}>
+              <div style={{ width:40, height:22, borderRadius:11, background: state.deloadWeek ? "#ff9800" : "#2a2a38", position:"relative", transition:"background .2s ease", flexShrink:0 }}>
+                <div style={{ width:18, height:18, borderRadius:9, background: state.deloadWeek ? "#fff" : "#555", position:"absolute", top:2, left: state.deloadWeek ? 20 : 2, transition:"all .2s ease" }}/>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:700, color: state.deloadWeek ? "#ff9800" : "#888" }}>
+                  {state.deloadWeek ? "🔄 DELOAD WEEK ACTIVE" : "Deload Week"}
+                </div>
+                <div style={{ fontSize:10, color:"#555" }}>
+                  {state.deloadWeek ? "Reduce volume 40-50%, keep intensity. Focus on recovery & technique." : "Tap to activate when you need a recovery week"}
+                </div>
+              </div>
+            </div>
+            {state.deloadWeek && (
+              <div style={{ marginTop:6, padding:"8px 12px", background:"rgba(255,152,0,.08)", borderRadius:8, border:"1px solid rgba(255,152,0,.15)" }}>
+                <div style={{ fontSize:11, color:"#ff9800", fontWeight:600, marginBottom:4 }}>📋 Deload Protocol</div>
+                <div style={{ fontSize:11, color:"#999", lineHeight:1.6 }}>
+                  • Drop to 2 sets per exercise (instead of 3)<br/>
+                  • Keep weight the same, reduce reps by 30-40%<br/>
+                  • Cut total weekly volume by ~50%<br/>
+                  • Maintain protein at {state.proteinTarget}g — recovery demands it<br/>
+                  • Eat at maintenance (~{state.calorieTarget} kcal)<br/>
+                  • Prioritise sleep (8+ hrs) & hydration
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* CONTENT */}
+          <div style={{ padding:"0 20px 20px" }}>
+
+            {/* ── TODAY ── */}
+            {tab === "today" && (<>
+              <div className="card" style={{ display:"flex", justifyContent:"space-around", padding:20 }}>
+                <Ring value={todayCalories} max={state.calorieTarget} color="#00e676" label="CALORIES" sublabel={`/ ${state.calorieTarget}`}/>
+                <Ring value={todayProtein} max={state.proteinTarget} color="#448aff" label="PROTEIN" sublabel={`/ ${state.proteinTarget}g`}/>
+                <Ring value={checkedSets} max={totalSets} color="#ff9800" label="SETS" sublabel={`/ ${totalSets}`}/>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+                <div className="card" style={{ textAlign:"center", padding:12 }}>
+                  <div style={{ fontSize:24, fontWeight:700, fontFamily:"'Space Mono',monospace", color:"#00e676" }}>{workoutsDone}</div>
+                  <div style={{ fontSize:11, color:"#666", fontWeight:600 }}>WORKOUTS DONE</div>
+                </div>
+                <div className="card" style={{ textAlign:"center", padding:12 }}>
+                  <div style={{ fontSize:24, fontWeight:700, fontFamily:"'Space Mono',monospace", color:"#448aff" }}>{mealsDone}</div>
+                  <div style={{ fontSize:11, color:"#666", fontWeight:600 }}>MEALS LOGGED</div>
+                </div>
+              </div>
+              <div style={{ fontSize:14, fontWeight:700, display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>{I.dumbbell} Workout Checklist</div>
+              {state.workouts.map(w => <WorkoutCheck key={w.id} workout={w} state={state} dayLog={dayLog} toggleWorkout={toggleWorkout} toggleSet={toggleSet}/>)}
+              <div style={{ fontSize:14, fontWeight:700, display:"flex", alignItems:"center", gap:6, marginTop:16, marginBottom:8 }}>{I.food} Meal Checklist</div>
+              {state.meals.map(m => <MealCheck key={m.id} meal={m} state={state} dayLog={dayLog} toggleMeal={toggleMeal} toggleFood={toggleFood}/>)}
+            </>)}
+
+            {/* ── WORKOUTS ── */}
+            {tab === "workouts" && (<>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                <div style={{ fontSize:14, fontWeight:700 }}>Exercise Library</div>
+                <button className="btn" onClick={()=>setModal({type:"addEx"})} style={{ background:"#00e676", color:"#000", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:4 }}>{I.plus} Exercise</button>
+              </div>
+              {state.exercises.map(ex => (
+                <div key={ex.id} className="card" style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:600, fontSize:14 }}>{ex.name}</div>
+                    <div style={{ fontSize:11, color:"#666" }}>{ex.muscle}</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:14, color:"#00e676" }}>{ex.topWeight}kg</div>
+                    <div style={{ fontSize:11, color:"#666" }}>{ex.topReps} reps</div>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                    <div style={{ display:"flex", gap:2 }}>
+                      <button className="stepper-btn" onClick={()=>update(s=>({...s,exercises:s.exercises.map(e=>e.id===ex.id?{...e,topWeight:Math.max(0,e.topWeight-2.5)}:e)}))}>{I.arrowDown}</button>
+                      <button className="stepper-btn" onClick={()=>update(s=>({...s,exercises:s.exercises.map(e=>e.id===ex.id?{...e,topWeight:e.topWeight+2.5}:e)}))}>{I.arrowUp}</button>
+                    </div>
+                    <div style={{ display:"flex", gap:2 }}>
+                      <button className="stepper-btn" onClick={()=>update(s=>({...s,exercises:s.exercises.map(e=>e.id===ex.id?{...e,topReps:Math.max(1,e.topReps-1)}:e)}))}>{I.arrowDown}</button>
+                      <button className="stepper-btn" onClick={()=>update(s=>({...s,exercises:s.exercises.map(e=>e.id===ex.id?{...e,topReps:e.topReps+1}:e)}))}>{I.arrowUp}</button>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                    <button className="btn" onClick={()=>setModal({type:"editEx",exercise:ex})} style={{ background:"#1e1e28", color:"#aaa", borderRadius:6, padding:5, display:"flex" }}>{I.edit}</button>
+                    <button className="btn" onClick={()=>update(s=>({...s,exercises:s.exercises.filter(e=>e.id!==ex.id)}))} style={{ background:"#1e1e28", color:"#f44", borderRadius:6, padding:5, display:"flex" }}>{I.trash}</button>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:20, marginBottom:10 }}>
+                <div style={{ fontSize:14, fontWeight:700 }}>Workout Templates</div>
+                <button className="btn" onClick={()=>setModal({type:"addW"})} style={{ background:"#00e676", color:"#000", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:4 }}>{I.plus} Workout</button>
+              </div>
+              {state.workouts.map(w => (
+                <div key={w.id} className="card">
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14 }}>{w.name}</div>
+                      <div style={{ fontSize:11, color:"#666", marginTop:2 }}>{w.exercises.map(eid=>state.exercises.find(e=>e.id===eid)?.name).filter(Boolean).join(" · ")}</div>
+                    </div>
+                    <div style={{ display:"flex", gap:6 }}>
+                      <button className="btn" onClick={()=>setModal({type:"editW",workout:w})} style={{ background:"#1e1e28", color:"#aaa", borderRadius:6, padding:6, display:"flex" }}>{I.edit}</button>
+                      <button className="btn" onClick={()=>update(s=>({...s,workouts:s.workouts.filter(x=>x.id!==w.id)}))} style={{ background:"#1e1e28", color:"#f44", borderRadius:6, padding:6, display:"flex" }}>{I.trash}</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>)}
+
+            {/* ── MEALS ── */}
+            {tab === "meals" && (<>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                <div style={{ fontSize:14, fontWeight:700 }}>Food Library</div>
+                <button className="btn" onClick={()=>setModal({type:"addFood"})} style={{ background:"#448aff", color:"#fff", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:4 }}>{I.plus} Food</button>
+              </div>
+              {state.foods.map(food => (
+                <div key={food.id} className="card" style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:600, fontSize:13 }}>{food.name}</div>
+                    <div style={{ fontSize:10, color:"#666" }}>P:{food.protein}g · C:{food.carbs}g · F:{food.fat}g</div>
+                  </div>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:13, color:"#448aff" }}>{food.calories}</div>
+                  <div style={{ fontSize:10, color:"#555" }}>kcal</div>
+                  <div style={{ display:"flex", gap:4 }}>
+                    <button className="btn" onClick={()=>setModal({type:"editFood",food})} style={{ background:"#1e1e28", color:"#aaa", borderRadius:6, padding:5, display:"flex" }}>{I.edit}</button>
+                    <button className="btn" onClick={()=>update(s=>({...s,foods:s.foods.filter(f=>f.id!==food.id)}))} style={{ background:"#1e1e28", color:"#f44", borderRadius:6, padding:5, display:"flex" }}>{I.trash}</button>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:20, marginBottom:10 }}>
+                <div style={{ fontSize:14, fontWeight:700 }}>Meal Templates</div>
+                <button className="btn" onClick={()=>setModal({type:"addMeal"})} style={{ background:"#448aff", color:"#fff", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:4 }}>{I.plus} Meal</button>
+              </div>
+              {state.meals.map(meal => {
+                const cal = meal.foods.reduce((s,fid)=>{const f=state.foods.find(x=>x.id===fid);return s+(f?f.calories:0);},0);
+                return (
+                  <div key={meal.id} className="card">
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                      <div>
+                        <div style={{ fontWeight:700, fontSize:14 }}>{meal.name} <span style={{ color:"#448aff", fontFamily:"'Space Mono',monospace", fontSize:12 }}>{cal} kcal</span></div>
+                        <div style={{ fontSize:11, color:"#666", marginTop:2 }}>{meal.foods.map(fid=>state.foods.find(f=>f.id===fid)?.name).filter(Boolean).join(" · ")}</div>
+                      </div>
+                      <div style={{ display:"flex", gap:6 }}>
+                        <button className="btn" onClick={()=>setModal({type:"editMeal",meal})} style={{ background:"#1e1e28", color:"#aaa", borderRadius:6, padding:6, display:"flex" }}>{I.edit}</button>
+                        <button className="btn" onClick={()=>update(s=>({...s,meals:s.meals.filter(x=>x.id!==meal.id)}))} style={{ background:"#1e1e28", color:"#f44", borderRadius:6, padding:6, display:"flex" }}>{I.trash}</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="card" style={{ marginTop:16 }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:6 }}>{I.target} Daily Targets</div>
+                <div style={{ display:"flex", gap:16 }}>
+                  <div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666", fontWeight:600 }}>Calories</label><input type="number" value={state.calorieTarget} onChange={e=>update(s=>({...s,calorieTarget:Number(e.target.value)||0}))}/></div>
+                  <div style={{ flex:1 }}><label style={{ fontSize:11, color:"#666", fontWeight:600 }}>Protein (g)</label><input type="number" value={state.proteinTarget} onChange={e=>update(s=>({...s,proteinTarget:Number(e.target.value)||0}))}/></div>
+                </div>
+              </div>
+            </>)}
+
+            {/* ── PROGRESS ── */}
+            {tab === "progress" && (<>
+
+              {/* ── BODYWEIGHT TRACKER ── */}
+              <div className="card">
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <div style={{ fontSize:14, fontWeight:700 }}>⚖️ Bodyweight</div>
+                  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                    <input type="number" step="0.1" placeholder="kg" id="bw-input" style={{ width:70, fontSize:13, padding:"6px 8px" }}/>
+                    <button className="btn" onClick={()=>{ const el=document.getElementById("bw-input"); const v=parseFloat(el.value); if(!v) return; update(s=>({...s, bodyweight:[...s.bodyweight, {date:selectedDate, kg:v}].sort((a,b)=>a.date.localeCompare(b.date))})); el.value=""; }} style={{ background:"#00e676", color:"#000", borderRadius:8, padding:"6px 10px", fontSize:12, fontWeight:700 }}>Log</button>
+                  </div>
+                </div>
+                {state.bodyweight.length > 0 ? (() => {
+                  const bw = state.bodyweight.slice(-14);
+                  const latest = bw[bw.length-1];
+                  const first = bw[0];
+                  const diff = (latest.kg - first.kg).toFixed(1);
+                  const avg = (bw.reduce((s,x)=>s+x.kg,0)/bw.length).toFixed(1);
+                  const maxH = Math.max(...bw.map(x=>x.kg));
+                  const minH = Math.min(...bw.map(x=>x.kg));
+                  const range = maxH - minH || 1;
+                  return (<>
+                    <div style={{ display:"flex", gap:12, marginBottom:10 }}>
+                      <div style={{ flex:1, textAlign:"center", background:"#1a1a24", borderRadius:8, padding:8 }}>
+                        <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:18, color:"#00e676" }}>{latest.kg}</div>
+                        <div style={{ fontSize:10, color:"#555" }}>CURRENT kg</div>
+                      </div>
+                      <div style={{ flex:1, textAlign:"center", background:"#1a1a24", borderRadius:8, padding:8 }}>
+                        <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:18, color:parseFloat(diff)>0?"#ff9800":"#448aff" }}>{diff>0?"+":""}{diff}</div>
+                        <div style={{ fontSize:10, color:"#555" }}>TREND kg</div>
+                      </div>
+                      <div style={{ flex:1, textAlign:"center", background:"#1a1a24", borderRadius:8, padding:8 }}>
+                        <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize:18, color:"#e040fb" }}>{avg}</div>
+                        <div style={{ fontSize:10, color:"#555" }}>AVG kg</div>
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"flex-end", gap:3, height:80 }}>
+                      {bw.map((w,i) => {
+                        const h = Math.max(8, ((w.kg - minH) / range) * 70 + 10);
+                        return (
+                          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                            <div style={{ fontSize:8, color:"#555", fontFamily:"'Space Mono',monospace" }}>{w.kg}</div>
+                            <div style={{ width:"100%", height:h, background:"linear-gradient(180deg, #00e676, #00e67644)", borderRadius:3 }}/>
+                            <div style={{ fontSize:7, color:"#444" }}>{w.date.slice(5)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>);
+                })() : <div style={{ color:"#555", fontSize:12, textAlign:"center", padding:10 }}>Log your first weigh-in above</div>}
+              </div>
+
+              {/* ── COACHING INSIGHTS ── */}
+              <div className="card" style={{ borderLeft:"3px solid #e040fb" }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:10, color:"#e040fb" }}>🧠 Coach Insights</div>
+                {(() => {
+                  const insights = [];
+                  const logDates = Object.keys(state.dailyLog).sort();
+                  const last7 = logDates.slice(-7);
+                  const last14 = logDates.slice(-14);
+
+                  // 0. Deload week guidance
+                  if (state.deloadWeek) {
+                    insights.push({ icon:"🔄", text:"DELOAD WEEK — Reduce sets to 2 per exercise, cut reps by 30-40%. Keep weight the same. This is strategic recovery, not laziness. Your muscles grow during rest.", color:"#ff9800" });
+                    const lastDeload = state.deloadHistory.length > 1 ? state.deloadHistory[state.deloadHistory.length - 2] : null;
+                    if (lastDeload?.end) {
+                      const daysSince = Math.floor((new Date(getToday()) - new Date(lastDeload.end)) / 86400000);
+                      insights.push({ icon:"📅", text:"Last deload ended " + daysSince + " days ago. Optimal deload frequency for naturals: every 4-6 weeks.", color:"#448aff" });
+                    }
+                  } else {
+                    // Check if deload is overdue
+                    const lastDeload = state.deloadHistory.length > 0 ? state.deloadHistory[state.deloadHistory.length - 1] : null;
+                    if (lastDeload?.end) {
+                      const daysSince = Math.floor((new Date(getToday()) - new Date(lastDeload.end)) / 86400000);
+                      if (daysSince > 42) insights.push({ icon:"⚠️", text:"It's been " + daysSince + " days since your last deload. Natural lifters should deload every 4-6 weeks to prevent CNS fatigue & joint stress. Consider activating deload this week.", color:"#f44336" });
+                      else if (daysSince > 28) insights.push({ icon:"🔄", text: daysSince + " days since last deload. You're approaching the 4-6 week mark — monitor fatigue, joint soreness & sleep quality.", color:"#ff9800" });
+                    } else if (state.deloadHistory.length === 0 && logDates.length > 28) {
+                      insights.push({ icon:"🔄", text:"No deload weeks recorded yet. If you've been training hard for 4+ weeks, consider scheduling one. Deloads prevent overtraining and prime your body for new PRs.", color:"#ff9800" });
+                    }
+                  }
+
+                  // 1. Training consistency
+                  const trainedDays = last7.filter(d => { const l=state.dailyLog[d]; return Object.values(l?.checkedWorkouts||{}).some(Boolean); }).length;
+                  if (trainedDays >= 5) insights.push({ icon:"✅", text:"Excellent consistency — " + trainedDays + "/7 training days this week. Stay the course.", color:"#00e676" });
+                  else if (trainedDays >= 3) insights.push({ icon:"⚡", text: trainedDays + "/7 days trained. Aim for 5 sessions/week for optimal natural hypertrophy.", color:"#ff9800" });
+                  else if (trainedDays > 0) insights.push({ icon:"⚠️", text:"Only " + trainedDays + " training days this week. Muscle protein synthesis peaks every 48-72hrs — you're leaving gains on the table.", color:"#f44336" });
+
+                  // 2. Calorie compliance
+                  const calDays = last7.map(d => {
+                    const log = state.dailyLog[d];
+                    return state.meals.reduce((sum, meal) => {
+                      if (!log?.checkedMeals?.[meal.id]) return sum;
+                      return sum + meal.foods.reduce((fs, fid) => { const f = state.foods.find(x=>x.id===fid); return fs+(f?f.calories:0); }, 0);
+                    }, 0);
+                  }).filter(c => c > 0);
+                  if (calDays.length > 0) {
+                    const avgCal = Math.round(calDays.reduce((s,c)=>s+c,0)/calDays.length);
+                    const diff = avgCal - state.calorieTarget;
+                    if (Math.abs(diff) < 150) insights.push({ icon:"🎯", text:"Calorie intake averaging " + avgCal + " kcal — right on target. Surplus/deficit within optimal range.", color:"#00e676" });
+                    else if (diff > 300) insights.push({ icon:"📈", text:"Averaging " + avgCal + " kcal (+" + diff + " over target). If not bulking, reduce by ~" + Math.abs(diff) + " kcal to stay lean.", color:"#ff9800" });
+                    else if (diff < -300) insights.push({ icon:"📉", text:"Averaging " + avgCal + " kcal (" + diff + " under target). Under-eating impairs recovery. Prioritise hitting " + state.calorieTarget + " kcal.", color:"#f44336" });
+                    const loggedDays = calDays.length;
+                    if (loggedDays < 5 && last7.length >= 5) insights.push({ icon:"📝", text:"Only logged meals on " + loggedDays + "/7 days. Consistent tracking = consistent results. Log everything.", color:"#ff9800" });
+                  }
+
+                  // 3. Protein check
+                  const protDays = last7.map(d => {
+                    const log = state.dailyLog[d];
+                    return state.meals.reduce((sum, meal) => {
+                      if (!log?.checkedMeals?.[meal.id]) return sum;
+                      return sum + meal.foods.reduce((fs, fid) => { const f = state.foods.find(x=>x.id===fid); return fs+(f?f.protein:0); }, 0);
+                    }, 0);
+                  }).filter(p => p > 0);
+                  if (protDays.length > 0) {
+                    const avgProt = Math.round(protDays.reduce((s,p)=>s+p,0)/protDays.length);
+                    if (avgProt >= state.proteinTarget * 0.9) insights.push({ icon:"💪", text:"Protein at ~" + avgProt + "g/day. Excellent for natural muscle protein synthesis.", color:"#00e676" });
+                    else insights.push({ icon:"🥩", text:"Protein only ~" + avgProt + "g/day (target: " + state.proteinTarget + "g). For natty lifters, 1.6-2.2g/kg is critical. Add another whey shake or meal.", color:"#f44336" });
+                  }
+
+                  // 4. Bodyweight trend
+                  if (state.bodyweight.length >= 3) {
+                    const recent = state.bodyweight.slice(-7);
+                    const weekAgo = state.bodyweight.slice(-14, -7);
+                    if (weekAgo.length > 0) {
+                      const recentAvg = recent.reduce((s,x)=>s+x.kg,0)/recent.length;
+                      const prevAvg = weekAgo.reduce((s,x)=>s+x.kg,0)/weekAgo.length;
+                      const wkDiff = (recentAvg - prevAvg).toFixed(1);
+                      if (Math.abs(wkDiff) < 0.2) insights.push({ icon:"⚖️", text:"Weight stable at ~" + recentAvg.toFixed(1) + "kg. If bulking, increase cals by 100-200. If maintaining, perfect.", color:"#448aff" });
+                      else if (wkDiff > 0.5) insights.push({ icon:"⚖️", text:"Up ~" + wkDiff + "kg this week. If gaining >0.5kg/week as a natty, some is likely fat. Dial back ~200 kcal.", color:"#ff9800" });
+                      else if (wkDiff < -0.5) insights.push({ icon:"⚖️", text:"Down ~" + Math.abs(wkDiff) + "kg this week. If cutting, good pace. If maintaining/bulking, eat more — you're losing muscle.", color:"#f44336" });
+                    }
+                  }
+
+                  // 5. Volume per muscle group frequency
+                  const muscleFreq = {};
+                  last7.forEach(d => {
+                    const log = state.dailyLog[d];
+                    if (!log) return;
+                    state.workouts.forEach(w => {
+                      if (!log.checkedWorkouts?.[w.id]) return;
+                      w.exercises.forEach(eid => {
+                        const ex = state.exercises.find(e=>e.id===eid);
+                        if (ex) muscleFreq[ex.muscle] = (muscleFreq[ex.muscle]||0) + 1;
+                      });
+                    });
+                  });
+                  const underTrained = ["Legs","Chest","Back","Shoulders","Arms"].filter(m => (muscleFreq[m]||0) < 2);
+                  if (underTrained.length > 0 && trainedDays >= 3) insights.push({ icon:"🔍", text: underTrained.join(", ") + " hit fewer than 2x this week. For hypertrophy, each muscle needs 2+ sessions/week with 10-20 sets.", color:"#ff9800" });
+
+                  // 6. Set completion rate
+                  const totalPossible = last7.reduce((s,d) => {
+                    const log = state.dailyLog[d];
+                    return s + state.workouts.reduce((ws,w) => {
+                      if (!log?.checkedWorkouts?.[w.id]) return ws;
+                      return ws + w.exercises.length * 3;
+                    }, 0);
+                  }, 0);
+                  const totalDone = last7.reduce((s,d) => s + Object.values(state.dailyLog[d]?.checkedSets||{}).filter(Boolean).length, 0);
+                  if (totalPossible > 0) {
+                    const pct = Math.round(totalDone/totalPossible*100);
+                    if (pct >= 90) insights.push({ icon:"🔥", text: pct + "% set completion rate. Elite work ethic. Make sure you're pushing RPE 7-9 on working sets.", color:"#00e676" });
+                    else if (pct >= 60) insights.push({ icon:"📊", text: pct + "% sets completed. Aim for >90%. Skipped sets = missed volume = slower progress.", color:"#ff9800" });
+                  }
+
+                  // 7. Stagnation detection
+                  const staleExercises = state.exercises.filter(ex => ex.topWeight > 0 && ex.topReps > 0).slice(0, 20);
+                  if (staleExercises.length > 10 && logDates.length > 14) {
+                    insights.push({ icon:"🔄", text:"Review your PRs below. If key lifts haven't moved in 2+ weeks, consider: changing rep ranges, adding pauses, or swapping exercise variations.", color:"#448aff" });
+                  }
+
+                  if (insights.length === 0) insights.push({ icon:"👋", text:"Start logging workouts and meals to unlock personalised coaching insights.", color:"#555" });
+
+                  return insights.map((ins, i) => (
+                    <div key={i} style={{ display:"flex", gap:8, padding:"8px 0", borderBottom: i < insights.length-1 ? "1px solid #1a1a24" : "none" }}>
+                      <div style={{ fontSize:16, flexShrink:0 }}>{ins.icon}</div>
+                      <div style={{ fontSize:12, color:ins.color, lineHeight:1.5 }}>{ins.text}</div>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              {/* ── WEEKLY OVERVIEW ── */}
+              <div className="card">
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>📊 Last 14 Days — Calories</div>
+                {calHistory.length===0 ? <div style={{ color:"#555", fontSize:13, padding:20, textAlign:"center" }}>No data yet.</div> : (
+                  <div style={{ display:"flex", alignItems:"flex-end", gap:4, height:120 }}>
+                    {calHistory.map(d => {
+                      const h = Math.max(4, (d.calories/(state.calorieTarget||2500))*100);
+                      return (
+                        <div key={d.date} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                          <div style={{ fontSize:9, color:"#555", fontFamily:"'Space Mono',monospace" }}>{d.calories>0?d.calories:""}</div>
+                          <div style={{ width:"100%", height:h, background:d.calories>state.calorieTarget?"#f44336":"#00e676", borderRadius:4, minHeight:4, opacity:d.calories>0?1:.2 }}/>
+                          <div style={{ fontSize:8, color:"#444" }}>{d.date.slice(5)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="card">
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>🏋️ Last 14 Days — Sets Completed</div>
+                {calHistory.length===0 ? <div style={{ color:"#555", fontSize:13, padding:20, textAlign:"center" }}>No data yet.</div> : (
+                  <div style={{ display:"flex", alignItems:"flex-end", gap:4, height:120 }}>
+                    {calHistory.map(d => {
+                      const h = Math.max(4, (d.sets/(totalSets||1))*100);
+                      return (
+                        <div key={d.date} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                          <div style={{ fontSize:9, color:"#555", fontFamily:"'Space Mono',monospace" }}>{d.sets>0?d.sets:""}</div>
+                          <div style={{ width:"100%", height:h, background:"#ff9800", borderRadius:4, minHeight:4, opacity:d.sets>0?1:.2 }}/>
+                          <div style={{ fontSize:8, color:"#444" }}>{d.date.slice(5)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* ── MUSCLE VOLUME THIS WEEK ── */}
+              {(() => {
+                const muscleColors = { "Legs":"#00e676", "Chest":"#f44336", "Back":"#448aff", "Shoulders":"#ff9800", "Arms":"#e040fb", "Core":"#00bcd4", "Cardio":"#ffeb3b", "Full Body":"#8bc34a" };
+                const logDates = Object.keys(state.dailyLog).sort().slice(-7);
+                const volMap = {};
+                logDates.forEach(d => {
+                  const log = state.dailyLog[d];
+                  if (!log) return;
+                  state.workouts.forEach(w => {
+                    if (!log.checkedWorkouts?.[w.id]) return;
+                    w.exercises.forEach(eid => {
+                      const ex = state.exercises.find(e=>e.id===eid);
+                      if (ex) {
+                        const sets = [0,1,2].filter(si => log.checkedSets?.[`${w.id}-${eid}-${si}`]).length;
+                        volMap[ex.muscle] = (volMap[ex.muscle]||0) + sets;
+                      }
+                    });
+                  });
+                });
+                const muscles = Object.keys(volMap).sort((a,b) => volMap[b]-volMap[a]);
+                if (muscles.length === 0) return null;
+                const maxVol = Math.max(...Object.values(volMap));
+                return (
+                  <div className="card">
+                    <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>💎 Weekly Volume (sets per muscle)</div>
+                    {muscles.map(m => (
+                      <div key={m} style={{ marginBottom:8 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
+                          <div style={{ fontSize:12, fontWeight:600, color:muscleColors[m]||"#ccc" }}>{m}</div>
+                          <div style={{ fontSize:12, fontFamily:"'Space Mono',monospace", color:volMap[m]>=10?"#00e676":volMap[m]>=6?"#ff9800":"#f44336" }}>{volMap[m]} sets {volMap[m]<10?"⬆️ need more":volMap[m]<=20?"✓ optimal":"⚠️ high"}</div>
+                        </div>
+                        <div style={{ height:6, background:"#1a1a24", borderRadius:3, overflow:"hidden" }}>
+                          <div style={{ height:"100%", width:`${Math.min(100,(volMap[m]/20)*100)}%`, background:muscleColors[m]||"#00e676", borderRadius:3, transition:"width .3s ease" }}/>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize:10, color:"#444", marginTop:6 }}>Target: 10-20 sets/muscle/week for natural hypertrophy</div>
+                  </div>
+                );
+              })()}
+
+              {/* ── DELOAD HISTORY ── */}
+              {state.deloadHistory.length > 0 && (
+                <div className="card">
+                  <div style={{ fontSize:14, fontWeight:700, marginBottom:10 }}>🔄 Deload History</div>
+                  {state.deloadHistory.slice().reverse().map((d, i) => (
+                    <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom: i < state.deloadHistory.length - 1 ? "1px solid #1a1a24" : "none" }}>
+                      <div style={{ fontSize:12, color:"#ccc" }}>
+                        {d.start}{d.end ? " → " + d.end : " → ongoing"}
+                      </div>
+                      <div style={{ fontSize:11, fontFamily:"'Space Mono',monospace", color: d.end ? "#00e676" : "#ff9800" }}>
+                        {d.end ? Math.floor((new Date(d.end) - new Date(d.start)) / 86400000) + " days" : "active"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── PR CATEGORIES BY MUSCLE GROUP ── */}
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:8, marginTop:4 }}>🏆 Personal Records by Muscle</div>
+              {(() => {
+                const muscleColors = { "Legs": "#00e676", "Chest": "#f44336", "Back": "#448aff", "Shoulders": "#ff9800", "Arms": "#e040fb", "Core": "#00bcd4", "Cardio": "#ffeb3b", "Full Body": "#8bc34a" };
+                const muscleOrder = ["Legs", "Chest", "Back", "Shoulders", "Arms", "Core", "Cardio", "Full Body"];
+                const grouped = {};
+                state.exercises.forEach(ex => {
+                  if (!grouped[ex.muscle]) grouped[ex.muscle] = [];
+                  grouped[ex.muscle].push(ex);
+                });
+                return muscleOrder.filter(m => grouped[m] && grouped[m].length > 0).map(muscle => (
+                  <PRCategory key={muscle} muscle={muscle} exercises={grouped[muscle]} color={muscleColors[muscle] || "#00e676"} />
+                ));
+              })()}
+            </>)}
+          </div>
+
+          {/* TAB BAR */}
+          <div className="tab-bar">
+            {tabs.map(t => (
+              <div key={t.key} className={`tab-item ${tab===t.key?"active":""}`} onClick={()=>setTab(t.key)}>
+                {t.icon}<span>{t.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* MODALS */}
+          {modal && (
+            <div className="modal-overlay" onClick={()=>setModal(null)}>
+              <div className="modal-content" onClick={e=>e.stopPropagation()}>
+                {modal.type==="addEx" && <AddExModal update={update} close={()=>setModal(null)}/>}
+                {modal.type==="editEx" && <EditExModal update={update} exercise={modal.exercise} close={()=>setModal(null)}/>}
+                {modal.type==="addFood" && <AddFoodModal update={update} close={()=>setModal(null)}/>}
+                {modal.type==="editFood" && <EditFoodModal update={update} food={modal.food} close={()=>setModal(null)}/>}
+                {modal.type==="addW" && <AddWModal state={state} update={update} close={()=>setModal(null)}/>}
+                {modal.type==="editW" && <EditWModal state={state} update={update} workout={modal.workout} close={()=>setModal(null)}/>}
+                {modal.type==="addMeal" && <AddMModal state={state} update={update} close={()=>setModal(null)}/>}
+                {modal.type==="editMeal" && <EditMModal state={state} update={update} meal={modal.meal} close={()=>setModal(null)}/>}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+
+  <script>
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(r => {
+          console.log('SW registered:', r.scope);
+        }).catch(e => console.log('SW failed:', e));
+      });
+    }
+  </script>
+</body>
+</html>
